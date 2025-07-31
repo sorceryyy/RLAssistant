@@ -1,0 +1,19 @@
+{
+    "basic_params": {
+        "name": "default_user",
+        "age": 20,
+        "score": 0.0
+    },
+    "bool_params": {
+        "is_student": false,
+        "has_experience": false
+    },
+    "list_params": {
+        "grades": [80.0, 85.0, 90.0],
+        "subjects": ["math", "physics"]
+    },
+    "training_params": {
+        "lr": 0.001,
+        "batch_size": 64
+    }
+}
