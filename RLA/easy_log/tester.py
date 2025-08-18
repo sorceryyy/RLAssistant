@@ -9,6 +9,7 @@ import dill
 import copy
 import time
 import os
+import re
 
 import json
 import datetime
@@ -909,7 +910,7 @@ class Tester(
         self.serialize_object_and_save()
 
     def load_checkpoint(
-        self, ckp_index=None, checkpoint_name: Optional[str] = "checkpoint"
+        self, ckp_index=None, ckp_name_fm: Optional[str] = 'checkpoint_{}.pt'
     ):
         if self.dl_framework == FRAMEWORK.tensorflow:
             if checkpoint_name != "checkpoint":
@@ -936,45 +937,35 @@ class Tester(
             return max_iter, None
         elif self.dl_framework == FRAMEWORK.torch:
             import torch
-
             all_ckps = os.listdir(self.checkpoint_dir)
-            ites = []
-            for ckps in all_ckps:
-                print("ckps", ckps)
-                try:
-                    ites.append(
-                        int(ckps.split(f"{checkpoint_name}-")[1].split(".pt")[0])
-                    )
-                except ValueError:
-                    ites.append(
-                        int(ckps.split(f"{checkpoint_name}_")[1].split(".pt")[0])
-                    )
-            idx = np.argsort(ites)
-            all_ckps = np.array(all_ckps)[idx]
-            print("all checkpoints:")
-            pprint.pprint(all_ckps)
-            if ckp_index is None:
-
-                # ================ UPDATE IN FUTURE VERSION ================
-                try:
-                    ckp_index = int(
-                        all_ckps[-1].split(f"{checkpoint_name}-")[1].split(".pt")[0]
-                    )
-                except ValueError:
-                    ckp_index = int(
-                        all_ckps[-1].split(f"{checkpoint_name}_")[1].split(".pt")[0]
-                    )
-                # ================ UPDATE IN FUTURE VERSION ================
-
+            if '{}' not in ckp_name_fm:
+                assert ckp_index is None, f"ckp_index({ckp_index}) is not None when ckp_name_fm({ckp_name_fm}) is not a format string"
+                ckp_name = ckp_name_fm
+            else:
+                ites, valid_ckps = [], []
+                pattern = re.escape(ckp_name_fm).replace(r'\{\}', r'(.*?)')
+                for ckps in all_ckps:
+                    print("ckps", ckps)
+                    if re.findall(pattern, ckps):
+                        re_idx = re.findall(pattern, ckps)[0] # find idx
+                        ites.append(int(re_idx))
+                        valid_ckps.append(ckps) 
+                idx = np.argsort(ites)
+                valid_ckps = np.array(valid_ckps)[idx]
+                print("checkpoints consistent with ckp_name_fm :")
+                pprint.pprint(valid_ckps)
+                if ckp_index is None:
+                    re_idx = re.findall(pattern, valid_ckps[-1])[0] # find idx of last matches
+                    ckp_index = int(re_idx)
+                ckp_name = ckp_name_fm.format(ckp_index)
+                
             # ================ UPDATE IN FUTURE VERSION ================
             try:
-                return ckp_index, torch.load(
-                    self.checkpoint_dir + "{}-{}.pt".format(checkpoint_name, ckp_index)
-                )
-            except FileNotFoundError:
-                return ckp_index, torch.load(
-                    self.checkpoint_dir + "{}_{}.pt".format(checkpoint_name, ckp_index)
-                )
+                return ckp_index, torch.load(self.checkpoint_dir + ckp_name)
+            except:
+                print("[warning] failed to load with torch.load, try to return path")
+                return ckp_index, self.checkpoint_dir + ckp_name
+
             # ================ UPDATE IN FUTURE VERSION ================
 
     def auto_parse_info(self):

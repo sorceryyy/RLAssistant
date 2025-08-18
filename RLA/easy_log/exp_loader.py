@@ -2,7 +2,7 @@ from RLA.easy_log import logger
 from RLA.easy_log.tester import exp_manager, Tester
 import copy
 import argparse
-from typing import Optional
+from typing import Optional, Union
 from RLA.const import DEFAULT_X_NAME
 from pprint import pprint
 from RLA.easy_log.const import *
@@ -102,12 +102,13 @@ class ExperimentLoader(object):
             return argparse.Namespace(**exp_manager.hyper_param)
 
     def load_from_record_date(self, var_prefix: Optional[str] = None, variable_list: Optional[list]=None, verbose=True,
-                              ckp_index: Optional[int]=None, checkpoint_name: Optional[str] = 'checkpoint'):
+                              ckp_index: Optional[Union[int, str]]=None, ckp_name_fm: Optional[str] = 'inference_{}.pt'):
         """
 
         :param var_prefix: the prefix of namescope (for tf) to load. Set to '' to load all of the parameters.
         :param variable_list: the saved variables in the process of training, e.g., data buffer, decayed learning rate.
         :return:
+
         """
         if self.is_valid_config:
             loaded_tester = Tester.load_tester(self.load_date, self.task_name, self.data_root)
@@ -118,10 +119,10 @@ class ExperimentLoader(object):
             load_res = {}
             if var_prefix is not None:
                 loaded_tester.new_saver(var_prefix=var_prefix, max_to_keep=1, verbose=verbose)
-                _, load_res = loaded_tester.load_checkpoint(ckp_index, checkpoint_name=checkpoint_name)
+                _, load_res = loaded_tester.load_checkpoint(ckp_index, ckp_name_fm=ckp_name_fm)
             else:
                 loaded_tester.new_saver(max_to_keep=1, verbose=verbose)
-                _, load_res = loaded_tester.load_checkpoint(ckp_index, checkpoint_name=checkpoint_name)
+                _, load_res = loaded_tester.load_checkpoint(ckp_index, ckp_name_fm=ckp_name_fm)
             hist_variables = {}
             if variable_list is not None:
                 for v in variable_list:
