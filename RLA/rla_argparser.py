@@ -127,7 +127,7 @@ def _construct_default_args(config: dict, exclude_keys: list=[]):
         elif type_ == list:
             default_options.append(CustomArgs(default_flag, k, kargs={"nargs": "+"}))
         else:
-            default_options.append(CustomArgs(default_flag, k))
+            default_options.append(CustomArgs(default_flag, k, kargs={"type": type_}))
     return default_options
 
 
