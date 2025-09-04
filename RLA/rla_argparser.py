@@ -121,7 +121,7 @@ def _construct_default_args(config: dict, exclude_keys: list=[]):
     ]
     default_options = []
     for k, type_ in default_keys:
-        default_flag = f"--auto-{k.replace('.', '-')}"
+        default_flag = f"--{k}"
         if type_ == bool:
             default_options.append(CustomBoolArgs(default_flag, k, kargs={"default": None}))
         elif type_ == list:

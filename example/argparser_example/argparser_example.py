@@ -31,10 +31,6 @@ def main():
             'type': float,
             'help': 'Learning rate for training'
         }),
-        CustomArgs("--batch-size", target="training_params.batch_size", kargs={
-            'type': int,
-            'help': 'Batch size for training'
-        })
     ]
     
     # Specify the config file name
@@ -47,4 +43,36 @@ def main():
     print("Parsed configurations:", configs)
 
 if __name__ == "__main__":
+    """
+    Usage Examples:
+    
+    In addition to the predefined custom arguments (which serve as convenient shortcuts),
+    RLA automatically appends any additional command-line arguments to the configuration
+    using the standard --key=value format.
+    
+    For boolean arguments, RLA supports two formats:
+    - Use --key to set the value to True
+    - Use --no-key to set the value to False
+    
+    Example command-line usage:
+    
+    1. Basic usage with predefined arguments:
+       python script.py --name "Alice" --age 25 --score 95.5 --is-student --training_params.batch_size 128
+    
+    2. Using list arguments:
+       python script.py --grades 85.5 90.0 88.5 --subjects "Math" "Science" "English"
+    
+    3. Using boolean arguments (both formats):
+       python script.py --is-student --no-has-experience
+    
+    4. Combining predefined and additional arguments:
+       python script.py --name "Bob" --custom-param=value --another-flag=true
+    
+    5. Complete example:
+       python script.py --name "Charlie" --age 30 --score 92.0 --is-student \
+                       --grades 88.0 91.5 89.0 --subjects "Physics" "Chemistry" \
+                       --learning-rate 0.01 --batch-size 64 \
+                       --custom-optimizer="Adam" --use-gpu=true
+    """
+
     main()
