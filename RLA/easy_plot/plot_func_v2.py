@@ -7,6 +7,8 @@ import os
 import dill
 import copy
 import numpy as np
+from functools import reduce
+from operator import getitem
 from typing import Dict, List, Tuple, Type, Union, Optional, Callable
 import matplotlib.pyplot as plt
 from RLA import logger
@@ -16,6 +18,22 @@ from RLA.easy_plot import plot_util
 from RLA.easy_log.const import LOG, ARCHIVE_TESTER, OTHER_RESULTS, HYPARAM_FILE_NAME
 from RLA.easy_plot.utils import results_loader
 from RLA.query_tool import LogQueryResult
+
+def get_key_from_nested_dict(nested_dict, key):
+    try:
+        return reduce(getitem, key.split("."), nested_dict)
+    except KeyError:
+        print(f"Could not find key {key}")
+        return None
+
+def set_key_value_to_nested_dict(nested_dict, key, value):
+    keys = key.split('.')
+    set_empty_default_fn = lambda d, k: d.setdefault(k, {})
+    reduce(set_empty_default_fn, keys[:-1], nested_dict)[keys[-1]] = value
+    # current = nested_dict
+    # for k in keys[:-1]:
+    #     current = current.setdefault(k, {})
+    # current[keys[-1]] = value
 
 def default_key_to_legend(parse_dict, split_keys, y_name, use_y_name=True):
     """
@@ -32,9 +50,9 @@ def default_key_to_legend(parse_dict, split_keys, y_name, use_y_name=True):
     :type use_y_name: bool, default to True
     """
     for k in split_keys:
-        if k not in parse_dict.keys():
-            parse_dict[k] = 'NF'
-    task_split_key = '.'.join(f'{k}={parse_dict[k]}' for k in split_keys)
+        if get_key_from_nested_dict(parse_dict, k) is None:
+            set_key_value_to_nested_dict(parse_dict, k, 'NF')
+    task_split_key = '.'.join(f'{k}={get_key_from_nested_dict(parse_dict, k)}' for k in split_keys)
     if use_y_name:
         return task_split_key + ' eval:' + y_name
     else:
@@ -167,12 +185,11 @@ def split_by_task(taskpath, split_keys, y_names, key_to_legend_fn):
     kv_delimiter = '='
     parse_dict = {}
     for split_key in split_keys:
-        if split_key in taskpath.hyper_param:
-            parse_dict[split_key] = str(taskpath.hyper_param[split_key])
-            # parse_list.append(split_key + '=' + str(taskpath.hyper_param[split_key]))
+        value = get_key_from_nested_dict(taskpath.hyper_param, split_key)
+        if value is not None:
+            set_key_value_to_nested_dict(parse_dict, split_key, str(value))
         else:
-            parse_dict[split_key] = 'NF'
-            # parse_list.append(split_key + '=NF')
+            set_key_value_to_nested_dict(parse_dict, split_key, 'NF')
     param_keys = []
     for y_name in y_names:
         param_keys.append(key_to_legend_fn(parse_dict, split_keys, y_name))
