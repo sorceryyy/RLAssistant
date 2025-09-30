@@ -77,6 +77,8 @@ def _parse_custom_args(parser: Optional[argparse.ArgumentParser]=None, options: 
             _default_none_flag(parser, opt.flag, **opt.kargs)
         elif isinstance(opt, CustomBoolArgs):
             assert set(opt.kargs.keys()) <= {'help', 'default'}, f"{opt.flag} has invalid kargs{set(opt.kargs.keys())} for Custom boolean flag!"
+            if 'default' not in opt.kargs:
+                opt.kargs.update({'default': None}) # default to None if not specified
             boolean_flag(parser, opt.flag.lstrip('-'), **opt.kargs)
         else:
             raise ValueError(f'Unsupported custom option type {type(opt)}!')
