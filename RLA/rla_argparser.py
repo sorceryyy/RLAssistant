@@ -128,6 +128,8 @@ def _construct_default_args(config: dict, exclude_keys: list=[]):
             default_options.append(CustomBoolArgs(default_flag, k, kargs={"default": None}))
         elif type_ == list:
             default_options.append(CustomArgs(default_flag, k, kargs={"nargs": "+"}))
+        elif type_ is type(None):
+            default_options.append(CustomArgs(default_flag, k, kargs={"default": None}))
         else:
             default_options.append(CustomArgs(default_flag, k, kargs={"type": type_}))
     return default_options
