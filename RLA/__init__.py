@@ -9,3 +9,4 @@ from RLA.query_tool import experiment_data_query, single_experiment_query
 from RLA.easy_log.time_used_recorder import time_tracker
 from RLA.easy_log.const import *
 from RLA.const import *
+from RLA.easy_log.lightning_RLA_logger import Lightning_RLA_Logger
