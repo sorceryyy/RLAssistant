@@ -393,7 +393,7 @@ class Tester(
 
         return load_tester
 
-    def add_record_param(self, keys):
+    def add_record_param(self, keys, concisely=False):
         for k in keys:
             if "." in k:
                 sub_k = None
@@ -403,8 +403,9 @@ class Tester(
                     v = self.hyper_param[sub_k]
                     for sub_k in sub_k_list[1:]:
                         v = v[sub_k]
+                    k_name = str(k) if concisely else str(sub_k_list[-1])
                     self.hyper_param_record.append(
-                        str(k)
+                        k_name
                         + "="
                         + str(v).replace("[", "{").replace("]", "}").replace("/", "_")
                     )
@@ -416,8 +417,9 @@ class Tester(
                     )
                     self.print_args()
             else:
+                k_name = str(k) if concisely else str(k)
                 self.hyper_param_record.append(
-                    str(k)
+                    k_name
                     + "="
                     + str(self.hyper_param[k])
                     .replace("[", "{")
